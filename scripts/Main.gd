@@ -310,6 +310,9 @@ func _input(event: InputEvent) -> void:
 
 
 func _launch_poo(release_pos: Vector2) -> void:
+	is_dragging    = false
+	trajectory_pts = []
+
 	if current_poo == null or not is_instance_valid(current_poo):
 		return
 	if poos_remaining <= 0:
@@ -317,7 +320,7 @@ func _launch_poo(release_pos: Vector2) -> void:
 
 	var drag_vec = (drag_start - release_pos).limit_length(MAX_DRAG_DIST)
 	if drag_vec.length() < 10:
-		return   # too short a drag, ignore
+		return
 
 	var impulse  = drag_vec * LAUNCH_POWER
 	current_poo.freeze = false
@@ -325,8 +328,6 @@ func _launch_poo(release_pos: Vector2) -> void:
 	current_poo.apply_torque_impulse(randf_range(-30, 30))
 
 	poos_remaining -= 1
-	is_dragging    = false
-	trajectory_pts = []
 	current_poo    = null
 
 	# Immediately ready the next poo if we have ammo
@@ -352,7 +353,7 @@ func _evaluate_wave() -> void:
 func _complete_wave() -> void:
 	var poo_bonus = poos_remaining * 75 * wave
 	score        += poo_bonus
-	_flash_announce("WAVE CLEAR! 🎉\n+" + str(poo_bonus) + " BONUS!", Color(0.3, 1.0, 0.3))
+	_flash_announce("WAVE CLEAR!\n+" + str(poo_bonus) + " BONUS!", Color(0.3, 1.0, 0.3))
 	if current_poo and is_instance_valid(current_poo):
 		current_poo.queue_free()
 		current_poo = null
@@ -451,17 +452,17 @@ func _update_ui() -> void:
 
 	var poo_str = ""
 	for _i in poos_remaining:
-		poo_str += "💩"
-	poos_label.text = "AMMO: " + poo_str
+		poo_str += "[#] "
+	poos_label.text = "AMMO: " + poo_str.strip_edges()
 
 	var hearts = ""
 	for _i in lives:
-		hearts += "❤️"
+		hearts += "<3 "
 	for _i in (3 - lives):
-		hearts += "🖤"
-	lives_label.text = hearts
+		hearts += "-- "
+	lives_label.text = hearts.strip_edges()
 
-	world_label.text = "🌍 " + current_theme.get("name", "???") + " 🌍"
+	world_label.text = "[ " + current_theme.get("name", "???") + " ]"
 
 
 func _flash_announce(msg: String, col: Color) -> void:
@@ -500,6 +501,10 @@ func _calc_trajectory(mouse_pos: Vector2) -> void:
 # ═══════════════════════════════════════════════════════════════
 
 func _process(_delta: float) -> void:
+	# Web: mouseup events can be swallowed by the browser during a drag.
+	# Poll the button state each frame so we never get stuck in is_dragging.
+	if is_dragging and not Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
+		_launch_poo(get_viewport().get_mouse_position())
 	queue_redraw()
 
 
