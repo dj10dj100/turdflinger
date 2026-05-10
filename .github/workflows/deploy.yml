@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 env:
-  GODOT_VERSION: "4.3.0"  # update this when upgrading Godot
+  GODOT_VERSION: "4.6"  # matches project.godot features — no .0 suffix for Godot stable tags
 
 jobs:
   # ─────────────────────────────────────────────
