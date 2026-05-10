@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rm /Users/danieljenkins/turdflinger/.git/packed-refs.lock && echo \"Removed\" && git status)"
+    ],
+    "additionalDirectories": [
+      "/Users/danieljenkins/turdflinger/.git"
+    ]
+  }
+}
